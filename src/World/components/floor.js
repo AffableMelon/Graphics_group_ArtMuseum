@@ -11,9 +11,30 @@ function createFloor(width, length) {
     ao: 'floor/light-plank-flooring_ao.webp', 
     height: 'floor/light-plank-flooring_height.webp' 
 };
-	// const floorMaterial = createMaterial('light-plank-flooring_albedo.png')
-	// new MeshStandardMaterial({ color: 0x888888, roughness: 0.3 });
-	const floorMaterial = createMaterialNew(woodTextureFiles)
+const elegantStoneTiles = {
+  diff: 'elegant-stone-tiles-unity/elegant-stone-tiles_albedo.webp',
+  nor_gl: 'elegant-stone-tiles-unity/elegant-stone-tiles_normal-ogl.webp',
+  ao: 'elegant-stone-tiles-unity/elegant-stone-tiles_ao.webp',
+  metal: 'elegant-stone-tiles-unity/elegant-stone-tiles_metallic.webp',
+  disp: 'elegant-stone-tiles-unity/elegant-stone-tiles_height.webp',
+};
+const rectanglePolishedTile = {
+  diff: 'rectangle-polished-tile-unity/rectangle-polished-tile_albedo.webp',
+  nor_gl: 'rectangle-polished-tile-unity/rectangle-polished-tile_normal-ogl.webp',
+  ao: 'rectangle-polished-tile-unity/rectangle-polished-tile_ao.webp',
+  metal: 'rectangle-polished-tile-unity/rectangle-polished-tile_metallic.webp',
+  disp: 'rectangle-polished-tile-unity/rectangle-polished-tile_height.webp',
+};
+const slab_tiles = {
+  diff: 'slab_tiles_diff_4k.webp',
+  nor_gl: 'slab_tiles_nor_gl_4k.webp',
+  rough: 'slab_tiles_rough_4k.webp',
+  ao: 'slab_tiles_ao_4k.webp',
+  disp: 'slab_tiles_disp_4k.webp',
+  arm: 'slab_tiles_arm_4k.webp',
+};
+	// const floorMaterial = new MeshStandardMaterial({ color: 0x888888, roughness: 0.3 });
+	const floorMaterial = createMaterialNew(elegantStoneTiles, { repeat: [width, length] })
 
 	const floor = new Mesh(floorGeometry, floorMaterial);
 

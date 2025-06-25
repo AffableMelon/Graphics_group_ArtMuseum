@@ -9,7 +9,7 @@ function createCamera() {
 		100000, //far clipping
 	);
 
-	camera.position.set(10, -2, 20);
+	camera.position.set(0, 30, 20);
 	camera.autoRotate = false;
 	camera.rotationSpeed = 0.05;
 	camera.rotationTarget = new Vector3(0, 0, 0);

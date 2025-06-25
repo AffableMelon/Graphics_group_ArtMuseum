@@ -1,69 +1,72 @@
-import { MeshStandardMaterial, NoColorSpace, SRGBColorSpace, TextureLoader } from "three";
+import { MeshStandardMaterial, NoColorSpace, RepeatWrapping, SRGBColorSpace, TextureLoader } from "three";
 
 const textureLoader = new TextureLoader();
 
-// function createMaterial(texture_path) {
-
-// 	const texture = textureLoader.load(`assets/textures/${texture_path}`)
-// 	console.log("loaded texture is: ", texture)
-// 	texture.colorSpace = SRGBColorSpace;
-
-
-// 	const material = new MeshStandardMaterial({ map: texture });
-
-// 	return material;
-
-// }
-
-function createMaterialNew(fileNames){
+function createMaterialNew(fileNames, options = {}) {
     const materialProperties = {};
-	const basePath = 'assets/textures/'
-	 if (fileNames.albedo) {
-        const albedoTexture = textureLoader.load(`${basePath}${fileNames.albedo}`);
-        albedoTexture.colorSpace = SRGBColorSpace;
-        materialProperties.map = albedoTexture;
+    const basePath = 'assets/textures/';
+    const repeat = options.repeat || [1, 1];
+
+    const setTextureProps = (tex) => {
+        tex.wrapS = tex.wrapT = RepeatWrapping;
+        tex.repeat.set(repeat[0], repeat[1]);
+    };
+
+    if (fileNames.diff) {
+        const tex = textureLoader.load(`${basePath}${fileNames.diff}`);
+        tex.colorSpace = SRGBColorSpace;
+        setTextureProps(tex);
+        materialProperties.map = tex;
     }
 
-    if (fileNames.normal) {
-        const normalTexture = textureLoader.load(`${basePath}${fileNames.normal}`);
-        materialProperties.normalMap = normalTexture;
+    if (fileNames.nor_gl) {
+        const tex = textureLoader.load(`${basePath}${fileNames.nor_gl}`);
+        setTextureProps(tex);
+        materialProperties.normalMap = tex;
     }
 
-    // Roughness Map (grayscale data)
-    if (fileNames.roughness) {
-        const roughnessTexture = textureLoader.load(`${basePath}${fileNames.roughness}`);
-        roughnessTexture.colorSpace = NoColorSpace;
-        materialProperties.roughnessMap = roughnessTexture;
+    if (fileNames.rough) {
+        const tex = textureLoader.load(`${basePath}${fileNames.rough}`);
+        tex.colorSpace = NoColorSpace;
+        setTextureProps(tex);
+        materialProperties.roughnessMap = tex;
         materialProperties.roughness = 1.0;
     }
 
-    // Metallic Map (grayscale data)
-    if (fileNames.metallic) {
-        const metallicTexture = textureLoader.load(`${basePath}${fileNames.metallic}`);
-        metallicTexture.colorSpace = NoColorSpace; // Data texture
-        materialProperties.metalnessMap = metallicTexture;
-        materialProperties.metalness = 1.0; 
+    if (fileNames.metal) {
+        const tex = textureLoader.load(`${basePath}${fileNames.metal}`);
+        tex.colorSpace = NoColorSpace;
+        setTextureProps(tex);
+        materialProperties.metalnessMap = tex;
+        materialProperties.metalness = 1.0;
     }
 
-    // Ambient Occlusion Map (grayscale data)
     if (fileNames.ao) {
-        const aoTexture = textureLoader.load(`${basePath}${fileNames.ao}`);
-        aoTexture.colorSpace = NoColorSpace; // Data texture
-        materialProperties.aoMap = aoTexture;
-        materialProperties.aoMapIntensity = 1.0; 
+        const tex = textureLoader.load(`${basePath}${fileNames.ao}`);
+        tex.colorSpace = NoColorSpace;
+        setTextureProps(tex);
+        materialProperties.aoMap = tex;
+        materialProperties.aoMapIntensity = 1.0;
     }
 
-    // Height Map (for Bump or Displacement)
-    if (fileNames.height) {
-        const heightTexture = textureLoader.load(`${basePath}${fileNames.height}`);
-        heightTexture.colorSpace = NoColorSpace; 
-        materialProperties.bumpMap = heightTexture;
-        materialProperties.bumpScale = 0.02; // intensity
+    if (fileNames.disp) {
+        const tex = textureLoader.load(`${basePath}${fileNames.disp}`);
+        tex.colorSpace = NoColorSpace;
+        setTextureProps(tex);
+        materialProperties.bumpMap = tex;
+        materialProperties.bumpScale = 0.02;
     }
 
-    const material = new MeshStandardMaterial(materialProperties);
-    return material;
+    if (fileNames.arm) {
+        const tex = textureLoader.load(`${basePath}${fileNames.arm}`);
+        tex.colorSpace = NoColorSpace;
+        setTextureProps(tex);
+        materialProperties.metalnessMap = tex;
+        materialProperties.roughnessMap = tex;
+        materialProperties.aoMap = tex;
+    }
+
+    return new MeshStandardMaterial(materialProperties);
 }
-
 
 export { createMaterialNew };
