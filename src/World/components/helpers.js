@@ -11,5 +11,17 @@ function createGridHelper() {
 	return helper;
 }
 
-export { createAxesHelper, createGridHelper };
+function showLoadingOverlay(show) {
+  const overlay = document.getElementById("loadingOverlay");
+  if (!overlay) return;
+
+  if (show) {
+    overlay.classList.remove("fade-out");
+  } else {
+    overlay.classList.add("fade-out");
+  }
+}
+
+
+export { createAxesHelper, createGridHelper, showLoadingOverlay };
 

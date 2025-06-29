@@ -1,88 +1,76 @@
 import { Raycaster, Vector2 } from "three";
 
 class Raycast {
-	constructor(camera, scene, domElement) {
-		this.camera = camera;
-		this.scene = scene;
-		this.domElement = domElement;
+  constructor(camera, scene, domElement, maxDistance = 17) {
+    this.camera = camera;
+    this.scene = scene;
+    this.domElement = domElement;
+    this.raycaster = new Raycaster();
+    this.interactiveObjects = [];
+    this.maxDistance = maxDistance; // max raycast distance
 
-		this.raycaster = new Raycaster();
-		this.mouse = new Vector2();
-		this.interactiveObjects = [];
+    // Tooltip panel styling — simplified and modern
+    this.infoPanel = document.createElement("div");
+    Object.assign(this.infoPanel.style, {
+      position: "absolute",
+      background: "rgba(30, 30, 30, 0.8)",
+      color: "#fff",
+      padding: "8px 12px",
+      borderRadius: "6px",
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      fontSize: "13px",
+      fontWeight: "600",
+      pointerEvents: "none",
+      transition: "opacity 0.3s ease",
+      opacity: "0",
+      whiteSpace: "nowrap",
+      userSelect: "none",
+      zIndex: "9999",
+      boxShadow: "0 2px 6px rgba(0,0,0,0.5)",
+      maxWidth: "280px",
+    });
+    document.body.appendChild(this.infoPanel);
+  }
 
-		// Create info panel with better styling
-		this.infoPanel = document.createElement("div");
-		Object.assign(this.infoPanel.style, {
-			position: "absolute",
-			background: "rgba(30, 30, 30, 0.85)",
-			color: "#fff",
-			padding: "8px 16px",
-			borderRadius: "8px",
-			fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-			fontSize: "14px",
-			fontWeight: "600",
-			pointerEvents: "none",
-			transition: "opacity 0.3s ease",
-			opacity: "0",
-			whiteSpace: "nowrap",
-			userSelect: "none",
-			zIndex: "9999",
-		});
-		document.body.appendChild(this.infoPanel);
+  addInteractive(object) {
+    this.interactiveObjects.push(object);
+  }
 
-		this.domElement.addEventListener("click", this.onClick.bind(this));
-	}
+  tick() {
+    this.update();
+  }
 
-	addInteractive(object) {
-		this.interactiveObjects.push(object);
-	}
+  update() {
+    this.raycaster.setFromCamera(new Vector2(0, 0), this.camera);
+    const intersects = this.raycaster.intersectObjects(this.interactiveObjects, true);
 
-	onClick(event) {
-		// Normalize mouse position
-		const rect = this.domElement.getBoundingClientRect();
-		this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-		this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    if (intersects.length > 0 && intersects[0].distance <= this.maxDistance) {
+      const selected = intersects[0].object;
+      const title = selected.userData.title || "Untitled";
+      const artist = selected.userData.artist || null;
+      const medium = selected.userData.medium || null;
 
-		this.raycaster.setFromCamera(this.mouse, this.camera);
-		const intersects = this.raycaster.intersectObjects(
-			this.interactiveObjects,
-			true
-		);
+      // Build simple inline info text without bullet list
+      let infoText = `<strong>${title}</strong>`;
+      if (artist) infoText += ` &mdash; <em>by ${artist}</em>`;
+      if (medium) infoText += ` <span style="color:#ccc">(Medium - ${medium})</span>`;
 
-		if (intersects.length > 0) {
-			const selected = intersects[0].object;
-			const title = selected.userData.title || "Untitled";
-			const artist = selected.userData.artist || false;
-			const medium = selected.userData.medium || false;
+      this.infoPanel.innerHTML = infoText;
 
-			if (!artist && !medium) {
-				this.infoPanel.innerHTML = `
-                <ul>
-                    <li><strong>Title:</strong> ${title}</li>
-                </ul>
-            `;
+      // Position panel near center + offset
+      this.infoPanel.style.left = `${window.innerWidth / 2 + 20}px`;
+      this.infoPanel.style.top = `${window.innerHeight / 2 - 20}px`;
+      this.infoPanel.style.opacity = "1";
 
-			} else {
-				this.infoPanel.innerHTML = `
-                <ul>
-                    <li><strong>Title:</strong> ${title}</li>
-                    <li><strong>Artist:</strong> ${artist}</li>
-                    <li><strong>Medium:</strong> ${medium}</li>
-                </ul>
-            `;
-			}
-			this.infoPanel.style.left = `${event.clientX + 12}px`;
-			this.infoPanel.style.top = `${event.clientY + 12}px`;
-			this.infoPanel.style.opacity = "1";
+      clearTimeout(this.hideTimeout);
+      this.hideTimeout = setTimeout(() => {
+        this.infoPanel.style.opacity = "0";
+      }, 2000);
 
-			clearTimeout(this.hideTimeout);
-			this.hideTimeout = setTimeout(() => {
-				this.infoPanel.style.opacity = "0";
-			}, 2500);
-		} else {
-			this.infoPanel.style.opacity = "0";
-		}
-	}
+    } else {
+      this.infoPanel.style.opacity = "0";
+    }
+  }
 }
 
 export { Raycast };

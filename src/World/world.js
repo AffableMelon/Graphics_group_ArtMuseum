@@ -6,52 +6,87 @@ import { Resizer } from "./systems/Resizer.js";
 import { Loop } from "./systems/loop.js";
 import { cameraControls } from "./systems/controls.js";
 import { createFloor } from "./components/floor.js";
-import { TextureLoader } from "three";
+import { TextureLoader, Vector3, Box3 } from "three";
 import { createWalls } from "./components/walls.js";
-import { createGridHelper } from "./components/helpers.js";
-import { Box3, Vector3 } from "three/webgpu";
+import { createGridHelper, showLoadingOverlay } from "./components/helpers.js";
 import { decorateWallWithArtAndLights } from "./components/add2Dart.js";
 import { Raycast } from "./systems/Raycast.js";
 import { addSculpturesToScene } from "./components/sculptures.js";
+import { initColliders } from "./systems/Collision.js";
 
 class World {
   constructor(container) {
+    this.container = container;
+    this.staticMeshes = [];
+
+    // Set up camera, scene, renderer
     this.camera = createCamera();
     this.scene = createScene();
     this.renderer = createRenderer(this.scene, this.camera);
-    this.textureLoader = new TextureLoader();
-
-    const { wallsGroup, wallBoundingBoxes } = createWalls();
-
-    this.controls = cameraControls(this.camera, this.renderer.domElement, wallBoundingBoxes);
-    this.loop = new Loop(this.camera, this.scene, this.renderer);
-
     container.append(this.renderer.domElement);
 
+    // Loaders and utilities
+    this.textureLoader = new TextureLoader();
+    this.raycaster = new Raycast(this.camera, this.scene, this.renderer.domElement);
+
+    // Add floor and grid
     const floor = createFloor(100, 100);
     floor.position.y = 0;
-    const helper = createGridHelper();
-    this.scene.add(helper);
+    const gridHelper = createGridHelper();
+    this.scene.add(floor, gridHelper);
+
+    // Add lights
     const { keyLight, fillLight, ambientLight } = createLights();
-    const raycaster = new Raycast(this.camera, this.scene, this.renderer.domElement)
+    this.scene.add(keyLight, fillLight, ambientLight);
 
-    for (const wall of wallsGroup.children) {
-      const size = new Vector3();
-      new Box3().setFromObject(wall).getSize(size);
+    // Add walls and optional art
+    const { wallsGroup } = createWalls();
+    this.scene.add(wallsGroup);
 
-      if (Math.max(size.x, size.z) > 10) {
-        decorateWallWithArtAndLights(this.scene, wall, this.textureLoader, raycaster);
-      }
+    wallsGroup.children.forEach((wall) => {
+      this.staticMeshes.push(wall);
+
+      // Optional decoration:
+      // const size = new Vector3();
+      // new Box3().setFromObject(wall).getSize(size);
+      // if (Math.max(size.x, size.z) > 10) {
+      //   decorateWallWithArtAndLights(this.scene, wall, this.textureLoader, this.raycaster);
+      // }
+    });
+
+    // Loop setup
+    this.loop = new Loop(this.camera, this.scene, this.renderer);
+    this.loop.updateables.push(this.raycaster);
+
+    // Resizing
+    new Resizer(this.camera, this.renderer, container);
+
+    // Load sculptures and finish setup
+    this.initSculpturesAndControls();
+  }
+
+  async initSculpturesAndControls() {
+    const sculpturesGroup = await addSculpturesToScene(this.scene, this.raycaster);
+    showLoadingOverlay(true);
+    // Helper: collect all meshes recursively
+    function flattenMeshes(obj) {
+      const meshes = [];
+      obj.traverse((child) => {
+        if (child.isMesh) meshes.push(child);
+      });
+      return meshes;
     }
 
-    this.scene.add(floor, keyLight, fillLight, ambientLight);
+    const sculptureMeshes = flattenMeshes(sculpturesGroup);
+    sculptureMeshes.forEach((mesh) => this.staticMeshes.push(mesh));
 
-    // Pass raycaster to addSculpturesToScene to register interactive objects
-    addSculpturesToScene(this.scene, raycaster);
+    // Initialize collision detection with all static meshes
+    initColliders(this.staticMeshes, this.scene, false);
 
+    // Initialize controls after collision objects are ready
+    this.controls = cameraControls(this.camera, this.renderer.domElement, this.staticMeshes);
     this.loop.updateables.push(this.controls);
-    const resizer = new Resizer(this.camera, this.renderer, container);
-    this.scene.add(wallsGroup);
+    showLoadingOverlay(false);
   }
 
   render() {
@@ -66,7 +101,6 @@ class World {
     this.loop.stop();
   }
 
-  // Getters for instance properties
   getScene() {
     return this.scene;
   }
