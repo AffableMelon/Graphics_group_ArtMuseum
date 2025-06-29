@@ -10,12 +10,24 @@ class Raycast {
 		this.mouse = new Vector2();
 		this.interactiveObjects = [];
 
+		// Create info panel with better styling
 		this.infoPanel = document.createElement("div");
-		this.infoPanel.style.position = "absolute";
-		this.infoPanel.style.background = "rgba(0,0,0,0.7)";
-		this.infoPanel.style.color = "white";
-		this.infoPanel.style.padding = "10px 15px";
-		this.infoPanel.style.display = "none";
+		Object.assign(this.infoPanel.style, {
+			position: "absolute",
+			background: "rgba(30, 30, 30, 0.85)",
+			color: "#fff",
+			padding: "8px 16px",
+			borderRadius: "8px",
+			fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+			fontSize: "14px",
+			fontWeight: "600",
+			pointerEvents: "none",
+			transition: "opacity 0.3s ease",
+			opacity: "0",
+			whiteSpace: "nowrap",
+			userSelect: "none",
+			zIndex: "9999",
+		});
 		document.body.appendChild(this.infoPanel);
 
 		this.domElement.addEventListener("click", this.onClick.bind(this));
@@ -39,36 +51,21 @@ class Raycast {
 
 		if (intersects.length > 0) {
 			const selected = intersects[0].object;
+			const title = selected.userData.title || "Untitled";
 
-			const title = selected.userData.title || "Unnamed Artwork";
-			const artist = selected.userData.artist || "Unknown Artist";
-			const medium = selected.userData.medium || "Unknown Medium";
+			this.infoPanel.textContent = title;
+			this.infoPanel.style.left = `${event.clientX + 12}px`;
+			this.infoPanel.style.top = `${event.clientY + 12}px`;
+			this.infoPanel.style.opacity = "1";
 
-			// Construct HTML for an unordered list
-			this.infoPanel.innerHTML = `
-                <ul>
-                    <li><strong>Title:</strong> ${title}</li>
-                    <li><strong>Artist:</strong> ${artist}</li>
-                    <li><strong>Medium:</strong> ${medium}</li>
-                </ul>
-            `;
-			this.infoPanel.style.left = `${event.clientX + 10}px`;
-			this.infoPanel.style.top = `${event.clientY + 10}px`;
-			this.infoPanel.style.display = "block";
-
-			setTimeout(() => {
-				this.infoPanel.style.display = "none";
+			clearTimeout(this.hideTimeout);
+			this.hideTimeout = setTimeout(() => {
+				this.infoPanel.style.opacity = "0";
 			}, 2500);
-
+		} else {
+			this.infoPanel.style.opacity = "0";
 		}
-		else {
-			// If no intersection, hide the panel immediately (if it was showing)
-			this.infoPanel.style.display = "none";
-		}
-
 	}
-
-
 }
 
 export { Raycast };

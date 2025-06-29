@@ -9,65 +9,22 @@ const marbleTexture = textureLoader.load("/assets/textures/marble_diff.jpg");
 marbleTexture.wrapS = marbleTexture.wrapT = THREE.RepeatWrapping;
 marbleTexture.repeat.set(2, 1);
 
-export function addSculpturesToScene(scene) {
+export function addSculpturesToScene(scene, raycaster) {
   const sculptures = [
-    {
-      path: "/assets/models/abstract_sculpture.glb",
-      gx: 2,
-      gz: 0,
-      needStand: true,
-      standScale: { height: 1, radius: 0.6 },
-    },
-    {
-      path: "/assets/models/abstract_sculpture.glb",
-      gx: 4,
-      gz: 0,
-      needStand: false,
-    },
-    {
-      path: "/assets/models/abstract_sculpture.glb",
-      gx: 6,
-      gz: 0,
-      needStand: true,
-      standScale: { height: 0.6, radius: 0.4 },
-    },
-    {
-      path: "/assets/models/abstract_sculpture.glb",
-      gx: 8,
-      gz: 0,
-      needStand: false,
-    },
-    {
-      path: "/assets/models/sculpture_in_tenerife.glb",
-      gx: 1,
-      gz: 7,
-      needStand: false,
-      standScale: { height: 0.9, radius: 0.5 },
-    },
-    {
-      path: "/assets/models/sculpture_in_tenerife.glb",
-      gx: 3,
-      gz: 6,
-      needStand: false,
-    },
-    {
-      path: "/assets/models/sculpture_in_tenerife.glb",
-      gx: 5,
-      gz: 7,
-      standScale: { height: 1.5, radius: 0.7 },
-    },
-    {
-      path: "/assets/models/sculpture_in_tenerife.glb",
-      gx: 7,
-      gz: 7,
-      needStand: true,
-    },
+    { path: "/assets/models/abstract_sculpture.glb", gx: 2, gz: 0, needStand: true, standScale: { height: 1, radius: 0.6 }, title: "Abstract Sculpture 1" },
+    { path: "/assets/models/abstract_sculpture.glb", gx: 4, gz: 0, needStand: false, title: "Abstract Sculpture 2" },
+    { path: "/assets/models/abstract_sculpture.glb", gx: 6, gz: 0, needStand: true, standScale: { height: 0.6, radius: 0.4 }, title: "Abstract Sculpture 3" },
+    { path: "/assets/models/abstract_sculpture.glb", gx: 8, gz: 0, needStand: false, title: "Abstract Sculpture 4" },
+    { path: "/assets/models/sculpture_in_tenerife.glb", gx: 1, gz: 7, needStand: false, standScale: { height: 0.9, radius: 0.5 }, title: "Tenerife Sculpture 1" },
+    { path: "/assets/models/sculpture_in_tenerife.glb", gx: 3, gz: 6, needStand: false, title: "Tenerife Sculpture 2" },
+    { path: "/assets/models/sculpture_in_tenerife.glb", gx: 5, gz: 7, standScale: { height: 1.5, radius: 0.7 }, title: "Tenerife Sculpture 3" },
+    { path: "/assets/models/sculpture_in_tenerife.glb", gx: 7, gz: 7, needStand: true, title: "Tenerife Sculpture 4" },
   ];
 
   const tileSize = 10;
   const maxSize = 3;
 
-  sculptures.forEach(({ path, gx, gz, needStand, standScale }) => {
+  sculptures.forEach(({ path, gx, gz, needStand, standScale, title }) => {
     loader.load(
       path,
       (gltf) => {
@@ -110,9 +67,18 @@ export function addSculpturesToScene(scene) {
         }
 
         sculpture.position.set(posX, posY, posZ);
+
+        // Add title to userData & register for raycast interaction
+        sculpture.traverse((child) => {
+          if (child.isMesh) {
+            child.userData.title = title || "Untitled Sculpture";
+            if(raycaster) raycaster.addInteractive(child);
+          }
+        });
+
         scene.add(sculpture);
 
-        // SpotLight for each sculpture
+        // Add spotlight above sculpture
         const spotHeight = 5;
         const light = new THREE.SpotLight(0xffffff, 1.5, 10, Math.PI / 6, 0.2);
         light.position.set(posX, posY + spotHeight, posZ);

@@ -4,19 +4,16 @@ import { createScene } from "./components/scene";
 import { createRenderer } from "./systems/rendere";
 import { Resizer } from "./systems/Resizer.js";
 import { Loop } from "./systems/loop.js";
-import { cameraControls, cameraControlsDev } from "./systems/controls.js";
+import { cameraControls } from "./systems/controls.js";
 import { createFloor } from "./components/floor.js";
 import { TextureLoader } from "three";
 import { createWalls } from "./components/walls.js";
 import { createGridHelper } from "./components/helpers.js";
-import { createCentralStructures } from "./components/insideBlock.js";
 import { Box3, Vector3 } from "three/webgpu";
 import { decorateWallWithArtAndLights } from "./components/add2Dart.js";
 import { Raycast } from "./systems/Raycast.js";
 import { addSculpturesToScene } from "./components/sculptures.js";
 
-// let wallBoundingBoxes = []
-let textureLoader;
 class World {
   constructor(container) {
     this.camera = createCamera();
@@ -26,7 +23,6 @@ class World {
 
     const { wallsGroup, wallBoundingBoxes } = createWalls();
 
-    // this.controls = cameraControlsDev(this.camera, this.renderer.domElement);
     this.controls = cameraControls(this.camera, this.renderer.domElement, wallBoundingBoxes);
     this.loop = new Loop(this.camera, this.scene, this.renderer);
 
@@ -44,13 +40,15 @@ class World {
       new Box3().setFromObject(wall).getSize(size);
 
       if (Math.max(size.x, size.z) > 10) {
-        decorateWallWithArtAndLights(this.scene, wall, this.textureLoader, raycaster
-        );
+        decorateWallWithArtAndLights(this.scene, wall, this.textureLoader, raycaster);
       }
     }
 
     this.scene.add(floor, keyLight, fillLight, ambientLight);
-    addSculpturesToScene(this.scene);
+
+    // Pass raycaster to addSculpturesToScene to register interactive objects
+    addSculpturesToScene(this.scene, raycaster);
+
     this.loop.updateables.push(this.controls);
     const resizer = new Resizer(this.camera, this.renderer, container);
     this.scene.add(wallsGroup);
