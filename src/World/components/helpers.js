@@ -7,7 +7,7 @@ function createAxesHelper() {
 }
 
 function createGridHelper() {
-	const helper = new GridHelper(6);
+	const helper = new GridHelper(100);
 	return helper;
 }
 

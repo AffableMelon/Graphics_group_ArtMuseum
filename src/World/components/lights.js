@@ -2,59 +2,27 @@ import { AmbientLight, DirectionalLight, DirectionalLightHelper, HemisphereLight
 
 
 function createLights() {
-	const radius = 10;
-	const height = 10;
-	const directionalLight = new DirectionalLight(0xffffff, 1);
-	const ambientLight = new HemisphereLight(0xB1E1FF, 0xB97A20, 2,)
-	// const directionLightHelper = new DirectionalLightHelper(directionalLight);
+	const ambientLight = new HemisphereLight(0xffffff, 0x444444, 0.4); 
 
-	// directionalLight.add(directionLightHelper)
-	directionalLight.position.set(5, 10, 0);
-	directionalLight.target.position.set(0, 0, 0)
-	directionalLight.castShadow = true;
-	directionalLight.shadow.mapSize.width = 1024; // Default is 512
-    directionalLight.shadow.mapSize.height = 1024; // Default is 512
+	const fillLight = new DirectionalLight(0xffffff, 0.3);
+	fillLight.position.set(5, 10, 5);
+	fillLight.castShadow = false;
 
-	// directionalLight.position.set(radius,height,10);
-	//	light.target.position.set(10,0,0)
-const shadowMapSize = 10; // Adjust this value to fit your scene content
-    directionalLight.shadow.camera.left = -shadowMapSize;
-    directionalLight.shadow.camera.right = shadowMapSize;
-    directionalLight.shadow.camera.top = shadowMapSize;
-    directionalLight.shadow.camera.bottom = -shadowMapSize;
+	const keyLight = new DirectionalLight(0xffffff, 0.8);
+	keyLight.position.set(-10, 10, -10);
+	keyLight.castShadow = true;
+	keyLight.shadow.mapSize.set(2048, 2048);
+	const shadowSize = 20;
+	keyLight.shadow.camera.left = -shadowSize;
+	keyLight.shadow.camera.right = shadowSize;
+	keyLight.shadow.camera.top = shadowSize;
+	keyLight.shadow.camera.bottom = -shadowSize;
 
-	directionalLight.radius = radius;
-	directionalLight.height = height;
-	directionalLight.angle = 0;
-	directionalLight.speed = MathUtils.degToRad(15);
-	directionalLight.userData.isPaused = false
-
-
-directionalLight.tick = function(delta) {
-    if (this.userData.isPaused) {
-        return;
-    }
-
-    if (this.userData.animationTime === undefined) {
-        this.userData.animationTime = 0;
-    }
-
-    this.userData.animationTime += delta;
-
-    const t = this.userData.animationTime;
-
-    this.angle = this.angle ?? 0;
-    this.speed = this.speed ?? 1;
-    this.radius = this.radius ?? 10;
-    this.height = this.height ?? 5;
-
-    this.angle += delta * this.speed;
-
-    this.position.x = this.radius * Math.cos(this.angle);
-    this.position.z = this.radius * Math.sin(this.angle);
-    this.position.y = this.height;
-};
-	return { directionalLight, ambientLight };
+	return {
+		ambientLight,
+		keyLight,
+		fillLight
+	};
 }
 
 export { createLights };
