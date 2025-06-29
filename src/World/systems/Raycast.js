@@ -52,8 +52,25 @@ class Raycast {
 		if (intersects.length > 0) {
 			const selected = intersects[0].object;
 			const title = selected.userData.title || "Untitled";
+			const artist = selected.userData.artist || false;
+			const medium = selected.userData.medium || false;
 
-			this.infoPanel.textContent = title;
+			if (!artist && !medium) {
+				this.infoPanel.innerHTML = `
+                <ul>
+                    <li><strong>Title:</strong> ${title}</li>
+                </ul>
+            `;
+
+			} else {
+				this.infoPanel.innerHTML = `
+                <ul>
+                    <li><strong>Title:</strong> ${title}</li>
+                    <li><strong>Artist:</strong> ${artist}</li>
+                    <li><strong>Medium:</strong> ${medium}</li>
+                </ul>
+            `;
+			}
 			this.infoPanel.style.left = `${event.clientX + 12}px`;
 			this.infoPanel.style.top = `${event.clientY + 12}px`;
 			this.infoPanel.style.opacity = "1";
