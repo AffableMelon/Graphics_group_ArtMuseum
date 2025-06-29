@@ -12,6 +12,8 @@ import { createGridHelper } from "./components/helpers.js";
 import { createCentralStructures } from "./components/insideBlock.js";
 import { Box3, Vector3 } from "three/webgpu";
 import { decorateWallWithArtAndLights } from "./components/add2Dart.js";
+import { Raycast } from "./systems/Raycast.js";
+import { addSculpturesToScene } from "./components/sculptures.js";
 
 // let wallBoundingBoxes = []
 let textureLoader;
@@ -30,37 +32,27 @@ class World {
 
     container.append(this.renderer.domElement);
 
-    // const floor = createFloor(40, 20);
     const floor = createFloor(100, 100);
-    // const walkin = createCentralStructures();
-    // const walkin2 = createCentralStructures();
     floor.position.y = 0;
     const helper = createGridHelper();
     this.scene.add(helper);
     const { keyLight, fillLight, ambientLight } = createLights();
+    const raycaster = new Raycast(this.camera, this.scene, this.renderer.domElement)
 
     for (const wall of wallsGroup.children) {
       const size = new Vector3();
       new Box3().setFromObject(wall).getSize(size);
 
-      if (Math.max(size.x, size.z) > 15) {
-        decorateWallWithArtAndLights(this.scene, wall,this.textureLoader, {
-          maxArtPieces: 3,
-          artTextureURL: "https://placehold.co/512x512?text=Art",
-        });
+      if (Math.max(size.x, size.z) > 10) {
+        decorateWallWithArtAndLights(this.scene, wall, this.textureLoader, raycaster
+        );
       }
     }
 
     this.scene.add(floor, keyLight, fillLight, ambientLight);
-    // walkin.position.set(-12, 0, -8);
-    // walkin2.rotation.y = Math.PI;
-    // walkin2.position.set(-16, 0, 8);
-
+    addSculpturesToScene(this.scene);
     this.loop.updateables.push(this.controls);
-    // this.scene.add(walkin, walkin2)
-
     const resizer = new Resizer(this.camera, this.renderer, container);
-
     this.scene.add(wallsGroup);
   }
 

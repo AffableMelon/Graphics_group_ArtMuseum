@@ -14,7 +14,7 @@ class Raycast {
 		this.infoPanel.style.position = "absolute";
 		this.infoPanel.style.background = "rgba(0,0,0,0.7)";
 		this.infoPanel.style.color = "white";
-		this.infoPanel.style.padding = "5px 10px";
+		this.infoPanel.style.padding = "10px 15px";
 		this.infoPanel.style.display = "none";
 		document.body.appendChild(this.infoPanel);
 
@@ -39,20 +39,36 @@ class Raycast {
 
 		if (intersects.length > 0) {
 			const selected = intersects[0].object;
-			this.infoPanel.textContent = `Title ${selected.userData.title} \n${selected.userData.artist}\nMedium used ${selected.userData.medium}` || "Unnamed Part";
-			this.infoPanel.style.left = `${event.clientX}px`;
-			this.infoPanel.style.top = `${event.clientY}px`;
+
+			const title = selected.userData.title || "Unnamed Artwork";
+			const artist = selected.userData.artist || "Unknown Artist";
+			const medium = selected.userData.medium || "Unknown Medium";
+
+			// Construct HTML for an unordered list
+			this.infoPanel.innerHTML = `
+                <ul>
+                    <li><strong>Title:</strong> ${title}</li>
+                    <li><strong>Artist:</strong> ${artist}</li>
+                    <li><strong>Medium:</strong> ${medium}</li>
+                </ul>
+            `;
+			this.infoPanel.style.left = `${event.clientX + 10}px`;
+			this.infoPanel.style.top = `${event.clientY + 10}px`;
 			this.infoPanel.style.display = "block";
 
 			setTimeout(() => {
-					this.infoPanel.style.display = "none";
+				this.infoPanel.style.display = "none";
 			}, 2500);
-			
+
+		}
+		else {
+			// If no intersection, hide the panel immediately (if it was showing)
+			this.infoPanel.style.display = "none";
 		}
 
 	}
 
-	
+
 }
 
 export { Raycast };
