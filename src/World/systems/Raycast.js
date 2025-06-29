@@ -23,7 +23,7 @@ class Raycast {
       pointerEvents: "none",
       transition: "opacity 0.3s ease",
       opacity: "0",
-      whiteSpace: "nowrap",
+      whiteSpace: "pre-wrap",
       userSelect: "none",
       zIndex: "9999",
       boxShadow: "0 2px 6px rgba(0,0,0,0.5)",

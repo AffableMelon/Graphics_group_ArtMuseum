@@ -47,11 +47,11 @@ class World {
       this.staticMeshes.push(wall);
 
       // Optional decoration:
-      // const size = new Vector3();
-      // new Box3().setFromObject(wall).getSize(size);
-      // if (Math.max(size.x, size.z) > 10) {
-      //   decorateWallWithArtAndLights(this.scene, wall, this.textureLoader, this.raycaster);
-      // }
+      const size = new Vector3();
+      new Box3().setFromObject(wall).getSize(size);
+      if (Math.max(size.x, size.z) > 10) {
+        decorateWallWithArtAndLights(this.scene, wall, this.textureLoader, this.raycaster);
+      }
     });
 
     // Loop setup
